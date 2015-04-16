@@ -480,7 +480,16 @@ my (
 	$reconnectretry1, $reconnectretry2,
 	$tests,           $test_builder,
 	$allow3xx,        $justlogin,
+	
 );
+
+sub print_info{
+	print @_;
+}
+
+sub printf_info{
+	printf @_;
+}
 
 use vars qw ($opt_G);    # missing code for this will be option.
 
@@ -565,7 +574,7 @@ check_lib_version()
   or die
 "imapsync needs perl lib Mail::IMAPClient release 2.2.9, or 3.0.19 or superior \n";
 
-print $banner;
+print_info $banner;
 
 exit(0) if ($justbanner);
 
@@ -583,6 +592,9 @@ $port1 ||= defined $ssl1 ? 993 : 143;
 
 $host2 || missing_option("--host2");
 $port2 ||= defined $ssl2 ? 993 : 143;
+
+
+
 
 sub connect_imap {
 	my ( $host, $port, $debugimap, $ssl ) = @_;
@@ -613,11 +625,11 @@ if ($justconnect) {
 	my $to   = ();
 
 	$from = connect_imap( $host1, $port1, $debugimap, $ssl1 );
-	print "From software: ", server_banner($from);
-	print "From capability: ", join( " ", $from->capability() ), "\n";
+	print_info "From software: ", server_banner($from);
+	print_info "From capability: ", join( " ", $from->capability() ), "\n";
 	$to = connect_imap( $host2, $port2, $debugimap, $ssl2 );
-	print "To   software: ", server_banner($to);
-	print "To   capability: ", join( " ", $to->capability() ), "\n";
+	print_info "To   software: ", server_banner($to);
+	print_info "To   capability: ", join( " ", $to->capability() ), "\n";
 	$from->logout();
 	$to->logout();
 	exit(0);
@@ -630,17 +642,17 @@ $syncinternaldates =
   defined($syncinternaldates) ? defined($syncinternaldates) : 1;
 
 if ($idatefromheader) {
-	print "Turned ON idatefromheader, ",
+	print_info "Turned ON idatefromheader, ",
 	  "will set the internal dates on host2 from the 'Date:' header line.\n";
 	$syncinternaldates = 0;
 
 }
 if ($syncinternaldates) {
-	print "Turned ON syncinternaldates, ",
+	print_info "Turned ON syncinternaldates, ",
 	  "will set the internal dates (arrival dates) on host2 same as host1.\n";
 }
 else {
-	print "Turned OFF syncinternaldates\n";
+	print_info "Turned OFF syncinternaldates\n";
 }
 
 if ( $syncinternaldates || $idatefromheader ) {
@@ -650,12 +662,12 @@ if ( $syncinternaldates || $idatefromheader ) {
 	Date::Manip->import(
 		qw(ParseDate Date_Cmp UnixDate Date_Init Date_TimeZone));
 
-	#print "Date_init: [", join(" ",Date_Init()), "]\n";
-	print "TimeZone:[", Date_TimeZone(), "]\n";
+	#print_info "Date_init: [", join(" ",Date_Init()), "]\n";
+	print_info "TimeZone:[", Date_TimeZone(), "]\n";
 	if ( not( Date_TimeZone() ) ) {
-		warn "TimeZone not defined, setting it to GMT";
+		print_info "TimeZone not defined, setting it to GMT";
 		Date_Init("TZ=GMT");
-		print "TimeZone: [", Date_TimeZone(), "]\n";
+		print_info "TimeZone: [", Date_TimeZone(), "]\n";
 	}
 }
 
@@ -674,8 +686,8 @@ $authmech2 = uc($authmech2);
 $authuser1 ||= $user1;
 $authuser2 ||= $user2;
 
-print "Will try to use $authmech1 authentication on host1\n";
-print "Will try to use $authmech2 authentication on host2\n";
+print_info "Will try to use $authmech1 authentication on host1\n";
+print_info "Will try to use $authmech2 authentication on host2\n";
 
 $syncacls    = ( defined($syncacls) )    ? $syncacls    : 0;
 $foldersizes = ( defined($foldersizes) ) ? $foldersizes : 1;
@@ -685,16 +697,16 @@ $fastio2 = ( defined($fastio2) ) ? $fastio2 : 0;
 
 @useheader = ("ALL") unless (@useheader);
 
-print "From imap server [$host1] port [$port1] user [$user1]\n";
-print "To   imap server [$host2] port [$port2] user [$user2]\n";
+print_info "From imap server [$host1] port [$port1] user [$user1]\n";
+print_info "To   imap server [$host2] port [$port2] user [$user2]\n";
 
 sub ask_for_password {
 	my ( $user, $host ) = @_;
-	print "What's the password for $user\@$host? ";
+	print_info "What's the password for $user\@$host? ";
 	Term::ReadKey::ReadMode(2);
 	my $password = <>;
 	chomp $password;
-	printf "\n";
+	printf_info "\n";
 	Term::ReadKey::ReadMode(0);
 	return $password;
 }
@@ -717,14 +729,14 @@ my $to   = ();
 $timestart  = time();
 $timebefore = $timestart;
 
-$debugimap and print "From connection\n";
+$debugimap and print_info "From connection\n";
 $from = login_imap(
 	$host1,     $port1,     $user1,   $password1,
 	$debugimap, $timeout,   $fastio1, $ssl1,
 	$authmech1, $authuser1, $reconnectretry1
 );
 
-$debugimap and print "To  connection\n";
+$debugimap and print_info "To  connection\n";
 $to = login_imap(
 	$host2,     $port2,     $user2,   $password2,
 	$debugimap, $timeout,   $fastio2, $ssl2,
@@ -733,8 +745,8 @@ $to = login_imap(
 
 #  history
 
-$debug and print "From Buffer I/O: ", $from->Buffer(), "\n";
-$debug and print "To   Buffer I/O: ", $to->Buffer(),   "\n";
+$debug and print_info "From Buffer I/O: ", $from->Buffer(), "\n";
+$debug and print_info "To   Buffer I/O: ", $to->Buffer(),   "\n";
 
 sub login_imap {
 	my (
@@ -759,7 +771,7 @@ sub login_imap {
 	$timeout and $imap->Timeout($timeout);
 
 	( Mail::IMAPClient->VERSION =~ /^2/ or !$imap->can("Reconnectretry") )
-	  ? warn("--reconnectretry* requires IMAPClient >= 3.17\n")
+	  ? print_info("--reconnectretry* requires IMAPClient >= 3.17\n")
 	  : $imap->Reconnectretry($reconnectretry)
 	  if ($reconnectretry);
 
@@ -767,19 +779,19 @@ sub login_imap {
 	myconnect($imap)
 	  or die "Can not open imap connection on [$host] with user [$user]: $@\n";
 
-	print "Banner: ", server_banner($imap);
+	print_info "Banner: ", server_banner($imap);
 
 	if (   $imap->has_capability("AUTH=$authmech")
 		or $imap->has_capability($authmech) )
 	{
-		printf( "Host %s says it has CAPABILITY for AUTHENTICATE %s\n",
+		printf_info( "Host %s says it has CAPABILITY for AUTHENTICATE %s\n",
 			$imap->Server, $authmech );
 	}
 	else {
-		printf( "Host %s says it has NO CAPABILITY for AUTHENTICATE %s\n",
+		printf_info( "Host %s says it has NO CAPABILITY for AUTHENTICATE %s\n",
 			$imap->Server, $authmech );
 		if ( $authmech eq 'PLAIN' ) {
-			print "Frequently PLAIN is only supported with SSL, ",
+			print_info "Frequently PLAIN is only supported with SSL, ",
 			  "try --ssl1 or --ssl2 option\n";
 		}
 	}
@@ -795,15 +807,15 @@ sub login_imap {
 		my $einfo = $imap->LastError || @{ $imap->History }[-1];
 		chomp($einfo);
 		my $error = "$info [$authmech]: $einfo\n";
-		print $error;    # note: duplicating error on stdout/stderr
+		print_info $error;    # note: duplicating error on stdout/stderr
 		die $error
 		  if ( $authmech eq 'LOGIN' or $imap->IsUnconnected() or $authuser );
-		print "Trying LOGIN Auth mechanism on [$host] with user [$user]\n";
+		print_info "Trying LOGIN Auth mechanism on [$host] with user [$user]\n";
 		$imap->Authmechanism("");
 		$imap->login()
 		  or die "$info [LOGIN]: ", $imap->LastError, "\n";
 	}
-	print "Success login on [$host] with user [$user] auth [$authmech]\n";
+	print_info "Success login on [$host] with user [$user] auth [$authmech]\n";
 	return ($imap);
 }
 
@@ -821,19 +833,19 @@ sub server_banner {
 	my $imap = shift;
 	for my $line ( $imap->Results() ) {
 
-		#print "LR: $line";
+		#print_info "LR: $line";
 		return $line if $line =~ /^\* (OK|NO|BAD)/;
 	}
 	return "No banner\n";
 }
 
-$debug and print "From capability: ", join( " ", $from->capability() ), "\n";
-$debug and print "To   capability: ", join( " ", $to->capability() ),   "\n";
+$debug and print_info "From capability: ", join( " ", $from->capability() ), "\n";
+$debug and print_info "To   capability: ", join( " ", $to->capability() ),   "\n";
 
 die unless $from->IsAuthenticated();
-print "host1: state Authenticated\n";
+print_info "host1: state Authenticated\n";
 die unless $to->IsAuthenticated();
-print "host2: state Authenticated\n";
+print_info "host2: state Authenticated\n";
 
 exit(0) if ($justlogin);
 
@@ -938,7 +950,7 @@ if ( scalar(@include) ) {
 	foreach my $include (@include) {
 		my @included_folders = grep /$include/, @all_source_folders;
 		add_to_requested_folders(@included_folders);
-		print
+		print_info
 		  "Including folders matching pattern '$include': @included_folders\n";
 	}
 }
@@ -948,7 +960,7 @@ if ( scalar(@exclude) ) {
 		my @requested_folder = sort( keys(%requested_folder) );
 		my @excluded_folders = grep /$exclude/, @requested_folder;
 		remove_from_requested_folders(@excluded_folders);
-		print
+		print_info
 		  "Excluding folders matching pattern '$exclude': @excluded_folders\n";
 	}
 }
@@ -957,7 +969,7 @@ if ( scalar(@exclude) ) {
 
 foreach my $folder ( keys(%requested_folder) ) {
 	if ( not $from->selectable($folder) ) {
-		print "Warning: ignoring folder $folder because it is not selectable\n";
+		print_info "Warning: ignoring folder $folder because it is not selectable\n";
 		remove_from_requested_folders($folder);
 	}
 }
@@ -1045,14 +1057,14 @@ my ( $f_sep, $t_sep );
 
 # what are the private folders separators for each server ?
 
-$debug and print "Getting separators\n";
+$debug and print_info "Getting separators\n";
 $f_sep = get_separator( $from, $sep1, "--sep1" );
 $t_sep = get_separator( $to,   $sep2, "--sep2" );
 
 #my $f_namespace = $from->namespace();
 #my $t_namespace = $to->namespace();
-#$debug and print "From namespace:\n", Data::Dumper->Dump([$f_namespace]);
-#$debug and print "To   namespace:\n", Data::Dumper->Dump([$t_namespace]);
+#$debug and print_info "From namespace:\n", Data::Dumper->Dump([$f_namespace]);
+#$debug and print_info "To   namespace:\n", Data::Dumper->Dump([$t_namespace]);
 
 my ( $f_prefix, $t_prefix );
 $f_prefix = get_prefix( $from, $prefix1, "--prefix1" );
@@ -1062,20 +1074,20 @@ sub get_prefix {
 	my ( $imap, $prefix_in, $prefix_opt ) = @_;
 	my ($prefix_out);
 
-	$debug and print "Getting prefix namespace\n";
+	$debug and print_info "Getting prefix namespace\n";
 	if ( defined($prefix_in) ) {
-		print "Using [$prefix_in] given by $prefix_opt\n";
+		print_info "Using [$prefix_in] given by $prefix_opt\n";
 		$prefix_out = $prefix_in;
 		return ($prefix_out);
 	}
-	$debug and print "Calling namespace capability\n";
+	$debug and print_info "Calling namespace capability\n";
 	if ( $imap->has_capability("namespace") ) {
 		my $r_namespace = $imap->namespace();
 		$prefix_out = $r_namespace->[0][0][0];
 		return ($prefix_out);
 	}
 	else {
-		print "No NAMESPACE capability in imap server ", $imap->Server(), "\n",
+		print_info "No NAMESPACE capability in imap server ", $imap->Server(), "\n",
 		  "Give the prefix namespace with the $prefix_opt option\n";
 		exit(1);
 	}
@@ -1086,27 +1098,27 @@ sub get_separator {
 	my ($sep_out);
 
 	if ($sep_in) {
-		print "Using [$sep_in] given by $sep_opt\n";
+		print_info "Using [$sep_in] given by $sep_opt\n";
 		$sep_out = $sep_in;
 		return ($sep_out);
 	}
-	$debug and print "Calling namespace capability\n";
+	$debug and print_info "Calling namespace capability\n";
 	if ( $imap->has_capability("namespace") ) {
 		$sep_out = $imap->separator();
 		return ($sep_out) if defined $sep_out;
-		warn "NAMESPACE request failed for ", $imap->Server(), ": ",
+		print_info "NAMESPACE request failed for ", $imap->Server(), ": ",
 		  $imap->LastError, "\n";
 		exit(1);
 	}
 	else {
-		warn "No NAMESPACE capability in imap server ", $imap->Server(), "\n",
+		print_info "No NAMESPACE capability in imap server ", $imap->Server(), "\n",
 		  "Give the separator character with the $sep_opt option\n";
 		exit(1);
 	}
 }
 
-print "From separator and prefix: [$f_sep][$f_prefix]\n";
-print "To   separator and prefix: [$t_sep][$t_prefix]\n";
+print_info "From separator and prefix: [$f_sep][$f_prefix]\n";
+print_info "To   separator and prefix: [$t_sep][$t_prefix]\n";
 
 sub foldersizes {
 
@@ -1114,17 +1126,17 @@ sub foldersizes {
 	my $tot     = 0;
 	my $tmess   = 0;
 	my @folders = @{$folders_r};
-	print "++++ Calculating sizes ++++\n";
+	print_info "++++ Calculating sizes ++++\n";
 	foreach my $folder (@folders) {
 		my $stot  = 0;
 		my $smess = 0;
-		printf( "$side Folder %-35s", "[$folder]" );
+		printf_info( "$side Folder %-35s", "[$folder]" );
 		unless ( $imap->exists($folder) ) {
-			print("does not exist yet\n");
+			print_info("does not exist yet\n");
 			next;
 		}
 		unless ( $imap->select($folder) ) {
-			warn "$side Folder $folder: Could not select: ", $imap->LastError,
+			print_info "$side Folder $folder: Could not select: ", $imap->LastError,
 			  "\n";
 			$error++;
 			next;
@@ -1136,7 +1148,7 @@ sub foldersizes {
 			$smess = scalar(@msgs);
 			foreach my $m (@msgs) {
 				my $s = $imap->size($m)
-				  or warn "Could not find size of message $m: $@\n";
+				  or print_info "Could not find size of message $m: $@\n";
 				$stot += $s;
 			}
 		}
@@ -1149,18 +1161,18 @@ sub foldersizes {
 				$imap->fetch_hash( "RFC822.SIZE", $hashref ) or die "$@";
 
 			   #$imap->Ranges(0);
-			   #print map {$hashref->{$_}->{"RFC822.SIZE"}, " "} keys %$hashref;
+			   #print_info map {$hashref->{$_}->{"RFC822.SIZE"}, " "} keys %$hashref;
 				map { $stot += $hashref->{$_}->{"RFC822.SIZE"} } keys %$hashref;
 			}
 		}
-		printf( " Size: %9s",       $stot );
-		printf( " Messages: %5s\n", $smess );
+		printf_info( " Size: %9s",       $stot );
+		printf_info( " Messages: %5s\n", $smess );
 		$tot   += $stot;
 		$tmess += $smess;
 	}
-	print "Total size: $tot\n";
-	print "Total messages: $tmess\n";
-	print "Time: ", timenext(), " s\n";
+	print_info "Total size: $tot\n";
+	print_info "Total messages: $tmess\n";
+	print_info "Time: ", timenext(), " s\n";
 }
 
 foreach my $f_fold (@f_folders) {
@@ -1196,11 +1208,11 @@ foreach my $folder (@t_folders_list) {
 	$t_folders_list{$folder}++;
 }
 
-print "++++ Listing folders ++++\n", "From folders list: ",
+print_info "++++ Listing folders ++++\n", "From folders list: ",
   map( "[$_] ", @f_folders ), "\n", "To   folders list: ",
   map( "[$_] ", @t_folders_list ), "\n";
 
-print "From subscribed folders list: ",
+print_info "From subscribed folders list: ",
   map( "[$_] ", sort keys(%subscribed_folder) ), "\n"
   if ($subscribed);
 
@@ -1224,19 +1236,19 @@ sub to_folder_name {
 
 	# first we remove the prefix
 	$x_fold =~ s/^\Q$f_prefix\E//;
-	$debug and print "removed source prefix: [$x_fold]\n";
+	$debug and print_info "removed source prefix: [$x_fold]\n";
 	$t_fold = separator_invert( $x_fold, $f_sep, $t_sep );
-	$debug and print "inverted   separators: [$t_fold]\n";
+	$debug and print_info "inverted   separators: [$t_fold]\n";
 
 	# Adding the prefix supplied by namespace or the --prefix2 option
 	$t_fold = $t_prefix . $t_fold
 	  unless ( ( $t_prefix eq "INBOX" . $t_sep )
 		and ( $t_fold =~ m/^INBOX$/i ) );
-	$debug and print "added   target prefix: [$t_fold]\n";
+	$debug and print_info "added   target prefix: [$t_fold]\n";
 
 	# Transforming the folder name by the --regextrans2 option(s)
 	foreach my $regextrans2 (@regextrans2) {
-		$debug and print "eval \$t_fold =~ $regextrans2\n";
+		$debug and print_info "eval \$t_fold =~ $regextrans2\n";
 		eval("\$t_fold =~ $regextrans2");
 		die("error: eval regextrans2 '$regextrans2': $@\n") if $@;
 	}
@@ -1287,7 +1299,7 @@ sub tests_flags_regex {
 sub flags_regex {
 	my ($flags_f) = @_;
 	foreach my $regexflag (@regexflag) {
-		$debug and print "eval \$flags_f =~ $regexflag\n";
+		$debug and print_info "eval \$flags_f =~ $regexflag\n";
 		eval("\$flags_f =~ $regexflag");
 		die("error: eval regexflag '$regexflag': $@\n") if $@;
 	}
@@ -1298,51 +1310,51 @@ sub acls_sync {
 	my ( $f_fold, $t_fold ) = @_;
 	if ($syncacls) {
 		my $f_hash = $from->getacl($f_fold)
-		  or warn "Could not getacl for $f_fold: $@\n";
+		  or print_info "Could not getacl for $f_fold: $@\n";
 		my $t_hash = $to->getacl($t_fold)
-		  or warn "Could not getacl for $t_fold: $@\n";
+		  or print_info "Could not getacl for $t_fold: $@\n";
 		my %users = map( { ( $_, 1 ) }( keys(%$f_hash), keys(%$t_hash) ) );
 		foreach my $user ( sort( keys(%users) ) ) {
 			my $acl = $f_hash->{$user} || "none";
-			print "acl $user: [$acl]\n";
+			print_info "acl $user: [$acl]\n";
 			next
 			  if ( $f_hash->{$user}
 				&& $t_hash->{$user}
 				&& $f_hash->{$user} eq $t_hash->{$user} );
 			unless ($dry) {
-				print "setting acl $t_fold $user $acl\n";
+				print_info "setting acl $t_fold $user $acl\n";
 				$to->setacl( $t_fold, $user, $acl )
-				  or warn "Could not set acl: $@\n";
+				  or print_info "Could not set acl: $@\n";
 			}
 		}
 	}
 }
 
-print "++++ Looping on each folder ++++\n";
+print_info "++++ Looping on each folder ++++\n";
 
 FOLDER: foreach my $f_fold (@f_folders) {
 	my $t_fold;
-	print "From Folder [$f_fold]\n";
+	print_info "From Folder [$f_fold]\n";
 	$t_fold = to_folder_name($f_fold);
-	print "To   Folder [$t_fold]\n";
+	print_info "To   Folder [$t_fold]\n";
 
 	last FOLDER if $from->IsUnconnected();
 	last FOLDER if $to->IsUnconnected();
 
 	unless ( $from->select($f_fold) ) {
-		warn "From Folder $f_fold: Could not select: ", $from->LastError, "\n";
+		print_info "From Folder $f_fold: Could not select: ", $from->LastError, "\n";
 		$error++;
 		next FOLDER;
 	}
 	if ( !exists( $t_folders_list{$t_fold} ) ) {
-		print "To   Folder $t_fold does not exist\n";
-		print "Creating folder [$t_fold]\n";
+		print_info "To   Folder $t_fold does not exist\n";
+		print_info "Creating folder [$t_fold]\n";
 		unless ($dry) {
 			unless ( $to->create($t_fold) ) {
 
 #pondracek: AAPT Migration Special: Ignoring '.INBOX.INBOX.{something}' mailboxes as errors
 				unless ( $to->LastError =~ m/Mailbox already exists/ ) {
-					warn "Couldn't create [$t_fold]: ", $to->LastError, "\n";
+					print_info "Couldn't create [$t_fold]: ", $to->LastError, "\n";
 					$error++;
 				}
 				next FOLDER;
@@ -1356,20 +1368,20 @@ FOLDER: foreach my $f_fold (@f_folders) {
 	acls_sync( $f_fold, $t_fold );
 
 	unless ( $to->select($t_fold) ) {
-		warn "To   Folder $t_fold: Could not select: ", $to->LastError, "\n";
+		print_info "To   Folder $t_fold: Could not select: ", $to->LastError, "\n";
 		$error++;
 		next FOLDER;
 	}
 
 	if ($expunge) {
-		print "Expunging $f_fold and $t_fold\n";
+		print_info "Expunging $f_fold and $t_fold\n";
 		unless ($dry) { $from->expunge() }
 
 		#unless($dry) { $to->expunge() };
 	}
 
 	if ( $subscribe and exists $subscribed_folder{$f_fold} ) {
-		print "Subscribing to folder $t_fold on destination server\n";
+		print_info "Subscribing to folder $t_fold on destination server\n";
 		unless ($dry) { $to->subscribe($t_fold) }
 	}
 
@@ -1380,31 +1392,31 @@ FOLDER: foreach my $f_fold (@f_folders) {
 
 	my @f_msgs = select_msgs($from);
 
-	$debug and print "LIST FROM: ", scalar(@f_msgs), " messages [@f_msgs]\n";
+	$debug and print_info "LIST FROM: ", scalar(@f_msgs), " messages [@f_msgs]\n";
 
 	# internal dates on "TO" are after the ones on "FROM"
 	# normally...
 	my @t_msgs = select_msgs($to);
 
-	$debug and print "LIST TO  : ", scalar(@t_msgs), " messages [@t_msgs]\n";
+	$debug and print_info "LIST TO  : ", scalar(@t_msgs), " messages [@t_msgs]\n";
 
 	my %f_hash = ();
 	my %t_hash = ();
 
-	print "++++ From [$f_fold] Parse 1 ++++\n";
+	print_info "++++ From [$f_fold] Parse 1 ++++\n";
 	last FOLDER if $from->IsUnconnected();
 	last FOLDER if $to->IsUnconnected();
 
 	my ( $f_heads, $f_fir ) = ( {}, {} );
 	$f_heads = $from->parse_headers( [@f_msgs], @useheader ) if (@f_msgs);
-	$debug and print "Time headers: ", timenext(), " s\n";
+	$debug and print_info "Time headers: ", timenext(), " s\n";
 	last FOLDER if $from->IsUnconnected();
 
 	$f_fir = $from->fetch_hash( "FLAGS", "INTERNALDATE", "RFC822.SIZE" )
 	  if (@f_msgs);
-	$debug and print "Time fir: ", timenext(), " s\n";
+	$debug and print_info "Time fir: ", timenext(), " s\n";
 	unless ($f_fir) {
-		warn "From Folder $f_fold: Could not fetch_hash ", scalar(@f_msgs),
+		print_info "From Folder $f_fold: Could not fetch_hash ", scalar(@f_msgs),
 		  " msgs: ", $from->LastError, "\n";
 		$error++;
 		next FOLDER;
@@ -1417,47 +1429,47 @@ FOLDER: foreach my $f_fold (@f_folders) {
 		if ( !$rc ) {
 			my $reason = !defined($rc) ? "no header" : "duplicate";
 			my $f_size = $f_fir->{$m}->{"RFC822.SIZE"} || 0;
-			print
+			print_info
 "+ Skipping msg #$m:$f_size in folder $f_fold ($reason so we ignore this message)\n";
 			$mess_size_total_skipped += $f_size;
 			$mess_skipped            += 1;
 		}
 	}
-	$debug and print "Time headers: ", timenext(), " s\n";
+	$debug and print_info "Time headers: ", timenext(), " s\n";
 
-	print "++++ To   [$t_fold] Parse 1 ++++\n";
+	print_info "++++ To   [$t_fold] Parse 1 ++++\n";
 
 	my ( $t_heads, $t_fir ) = ( {}, {} );
 	$t_heads = $to->parse_headers( [@t_msgs], @useheader ) if (@t_msgs);
-	$debug and print "Time headers: ", timenext(), " s\n";
+	$debug and print_info "Time headers: ", timenext(), " s\n";
 	last FOLDER if $to->IsUnconnected();
 
 	$t_fir = $to->fetch_hash( "FLAGS", "INTERNALDATE", "RFC822.SIZE" )
 	  if (@t_msgs);
-	$debug and print "Time fir: ", timenext(), " s\n";
+	$debug and print_info "Time fir: ", timenext(), " s\n";
 	last FOLDER if $to->IsUnconnected();
 	foreach my $m (@t_msgs) {
 		my $rc = parse_header_msg1( $to, $m, $t_heads, $t_fir, "T", \%t_hash );
 		if ( !$rc ) {
 			my $reason = !defined($rc) ? "no header" : "duplicate";
 			my $t_size = $t_fir->{$m}->{"RFC822.SIZE"} || 0;
-			print
+			print_info
 "+ Skipping msg #$m:$t_size in 'to' folder $t_fold ($reason so we ignore this message)\n";
 
 			#$mess_size_total_skipped += $msize;
 			#$mess_skipped += 1;
 		}
 	}
-	$debug and print "Time headers: ", timenext(), " s\n";
+	$debug and print_info "Time headers: ", timenext(), " s\n";
 
-	print "++++ Verifying [$f_fold] -> [$t_fold] ++++\n";
+	print_info "++++ Verifying [$f_fold] -> [$t_fold] ++++\n";
 
 	# messages in "from" that are not good in "to"
 
 	my @f_hash_keys_sorted_by_uid =
 	  sort { $f_hash{$a}{'m'} <=> $f_hash{$b}{'m'} } keys(%f_hash);
 
-	#print map { $f_hash{$_}{'m'} . " "} @f_hash_keys_sorted_by_uid;
+	#print_info map { $f_hash{$_}{'m'} . " "} @f_hash_keys_sorted_by_uid;
 
 	my @t_hash_keys_sorted_by_uid =
 	  sort { $t_hash{$a}{'m'} <=> $t_hash{$b}{'m'} } keys(%t_hash);
@@ -1466,12 +1478,12 @@ FOLDER: foreach my $f_fold (@f_folders) {
 		my @expunge;
 		foreach my $m_id (@t_hash_keys_sorted_by_uid) {
 
-			#print "$m_id ";
+			#print_info "$m_id ";
 			unless ( exists( $f_hash{$m_id} ) ) {
 				my $t_msg = $t_hash{$m_id}{'m'};
 				my $flags = $t_hash{$m_id}{'F'} || "";
 				my $isdel = $flags =~ /\B\\Deleted\b/ ? 1 : 0;
-				print "deleting message $m_id  $t_msg\n"
+				print_info "deleting message $m_id  $t_msg\n"
 				  if !$isdel;
 				push( @expunge, $t_msg ) if $uidexpunge2;
 				unless ( $dry or $isdel ) {
@@ -1483,10 +1495,10 @@ FOLDER: foreach my $f_fold (@f_folders) {
 
 		my $cnt = scalar @expunge;
 		if ( @expunge and !$to->can("uidexpunge") ) {
-			warn "uidexpunge not supported (< IMAPClient 3.17)\n";
+			print_info "uidexpunge not supported (< IMAPClient 3.17)\n";
 		}
 		elsif (@expunge) {
-			print "uidexpunge $cnt message(s)\n";
+			print_info "uidexpunge $cnt message(s)\n";
 			$to->uidexpunge( \@expunge ) if !$dry;
 		}
 	}
@@ -1497,43 +1509,43 @@ FOLDER: foreach my $f_fold (@f_folders) {
 		my $f_idate = $f_hash{$m_id}{'D'};
 
 		if ( defined $maxsize and $f_size > $maxsize ) {
-			print
+			print_info
 "+ Skipping msg #$f_msg:$f_size in folder $f_fold (exceeds maxsize limit $maxsize bytes)\n";
 			$mess_size_total_skipped += $f_size;
 			$mess_skipped            += 1;
 			next MESS;
 		}
-		$debug and print "+ key     $m_id #$f_msg\n";
+		$debug and print_info "+ key     $m_id #$f_msg\n";
 		unless ( exists( $t_hash{$m_id} ) ) {
-			print "+ NO msg #$f_msg [$m_id] in $t_fold\n";
+			print_info "+ NO msg #$f_msg [$m_id] in $t_fold\n";
 
 			# copy
-			print "+ Copying msg #$f_msg:$f_size to folder $t_fold\n";
+			print_info "+ Copying msg #$f_msg:$f_size to folder $t_fold\n";
 			last FOLDER if $from->IsUnconnected();
 			last FOLDER if $to->IsUnconnected();
 			my $string;
 			$string = $from->message_string($f_msg);
 			unless ( defined($string) ) {
-				warn "Could not fetch message #$f_msg from $f_fold: ",
+				print_info "Could not fetch message #$f_msg from $f_fold: ",
 				  $from->LastError, "\n";
 				$error++;
 				$mess_size_total_error += $f_size;
 				next MESS;
 			}
 
-			#print "AAAmessage_string[$string]ZZZ\n";
+			#print_info "AAAmessage_string[$string]ZZZ\n";
 			#my $message_file = "tmp_imapsync_$$";
 			#$from->select($f_fold);
 			#unlink($message_file);
 			#$from->message_to_file($message_file, $f_msg) or do {
-			#	warn "Could not put message #$f_msg to file $message_file",
+			#	print_info "Could not put message #$f_msg to file $message_file",
 			#	$from->LastError;
 			#	$error++;
 			#	$mess_size_total_error += $f_size;
 			#	next MESS;
 			#};
 			#$string = file_to_string($message_file);
-			#print "AAA1[$string]ZZZ\n";
+			#print_info "AAA1[$string]ZZZ\n";
 			#unlink($message_file);
 			if (@regexmess) {
 				$string = regexmess($string);
@@ -1551,7 +1563,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 				ok( "ZoZoZo" eq regexmess("popopo"), "regexmess, s/p/Z/g" );
 				@regexmess = 's{c}{C}gxms';
 
-			  #print "RRR¤\n", regexmess("H1: abc\nH2: cde\n\nBody abc"), "\n";
+			  #print_info "RRR¤\n", regexmess("H1: abc\nH2: cde\n\nBody abc"), "\n";
 				ok(
 					"H1: abC\nH2: Cde\n\nBody abC" eq
 					  regexmess("H1: abc\nH2: cde\n\nBody abc"),
@@ -1563,7 +1575,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			sub regexmess {
 				my ($string) = @_;
 				foreach my $regexmess (@regexmess) {
-					$debug and print "eval \$string =~ $regexmess\n";
+					$debug and print_info "eval \$string =~ $regexmess\n";
 					eval("\$string =~ $regexmess");
 					die("error: eval regexmess '$regexmess': $@\n") if $@;
 				}
@@ -1571,23 +1583,23 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			}
 
 			$debug
-			  and print "=" x 80, "\n", "F message content begin next line\n",
+			  and print_info "=" x 80, "\n", "F message content begin next line\n",
 			  $string, "F message content ended on previous line\n", "=" x 80,
 			  "\n";
 			my $d = "";
 			if ($syncinternaldates) {
 				$d = $f_idate;
-				$debug and print "internal date from 1: [$d]\n";
+				$debug and print_info "internal date from 1: [$d]\n";
 				$d = good_date($d);
-				$debug and print "internal date from 1: [$d] (fixed)\n";
+				$debug and print_info "internal date from 1: [$d] (fixed)\n";
 			}
 
 			if ($idatefromheader) {
 
 				$d = $from->get_header( $f_msg, "Date" );
-				$debug and print "header date from 1: [$d]\n";
+				$debug and print_info "header date from 1: [$d]\n";
 				$d = good_date($d);
-				$debug and print "header date from 1: [$d] (fixed)\n";
+				$debug and print_info "header date from 1: [$d] (fixed)\n";
 			}
 
 			sub good_date {
@@ -1604,7 +1616,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			$flags_f = flags_regex($flags_f) if @regexflag;
 
 			my $new_id;
-			print "flags from: [$flags_f][$d]\n";
+			print_info "flags from: [$flags_f][$d]\n";
 			last FOLDER if $from->IsUnconnected();
 			last FOLDER if $to->IsUnconnected();
 			unless ($dry) {
@@ -1623,7 +1635,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 				}
 				unless ($new_id) {
 					no warnings 'uninitialized';
-					warn "Couldn't append msg #$f_msg (Subject:["
+					print_info "Couldn't append msg #$f_msg (Subject:["
 					  . $from->subject($f_msg)
 					  . "]) to folder $t_fold: ", $to->LastError, "\n";
 					$error++;
@@ -1635,12 +1647,12 @@ FOLDER: foreach my $f_fold (@f_folders) {
 					# good
 					# $new_id is an id if the IMAP server has the
 					# UIDPLUS capability else just a ref
-					print
+					print_info
 "Copied msg id [$f_msg] to folder $t_fold msg id [$new_id]\n";
 					$mess_size_total_trans += $f_size;
 					$mess_trans            += 1;
 					if ($delete) {
-						print "Deleting msg #$f_msg in folder $f_fold\n";
+						print_info "Deleting msg #$f_msg in folder $f_fold\n";
 						unless ($dry) {
 							$from->delete_message($f_msg);
 							last FOLDER      if $from->IsUnconnected();
@@ -1658,14 +1670,14 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			next MESS;
 		}
 		else {
-			$debug and print "Message id [$m_id] found in t:$t_fold\n";
+			$debug and print_info "Message id [$m_id] found in t:$t_fold\n";
 			$mess_size_total_skipped += $f_size;
 			$mess_skipped            += 1;
 		}
 
 		$fast and next MESS;
 
-		#$debug and print "MESSAGE $m_id\n";
+		#$debug and print_info "MESSAGE $m_id\n";
 		my $t_size = $t_hash{$m_id}{'s'};
 		my $t_msg  = $t_hash{$m_id}{'m'};
 
@@ -1683,7 +1695,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 		my @flags_a = map { exists $ft{$_} ? () : $_ } @ff;
 
 		$debug
-		  and print
+		  and print_info
 "Setting flags(@flags_a) ffrom($flags_f) fto($flags_t) on msg #$t_msg in $t_fold\n";
 
 		# This adds or changes flags but no flag are removed with this
@@ -1691,7 +1703,7 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			and @flags_a
 			and !$to->store( $t_msg, "+FLAGS.SILENT (@flags_a)" ) )
 		{
-			warn "Could not add flags '@flags_a' flagf '$flags_f'",
+			print_info "Could not add flags '@flags_a' flagf '$flags_f'",
 			  " flagt '$flags_t' on msg #$t_msg in $t_fold: ", $to->LastError,
 			  "\n";
 
@@ -1703,30 +1715,30 @@ FOLDER: foreach my $f_fold (@f_folders) {
 			my @flags_t = @{ $to->flags($t_msg) || [] };
 			last FOLDER if $to->IsUnconnected();
 
-			print "flags from: $flags_f\n", "flags to  : @flags_t\n";
+			print_info "flags from: $flags_f\n", "flags to  : @flags_t\n";
 
-			print "Looking dates\n";
+			print_info "Looking dates\n";
 
 			#my $d_f = $from->internaldate($f_msg);
 			#my $d_t = $to->internaldate($t_msg);
 			my $d_f = $f_hash{$m_id}{'D'};
 			my $d_t = $t_hash{$m_id}{'D'};
-			print "idate from: $d_f\n", "idate to  : $d_t\n";
+			print_info "idate from: $d_f\n", "idate to  : $d_t\n";
 
 			#unless ($d_f eq $d_t) {
-			#	print "!!! Dates differ !!!\n";
+			#	print_info "!!! Dates differ !!!\n";
 			#}
 		};
 		unless ( ( $f_size == $t_size ) or $skipsize ) {
 
 			# Bad size
-			print "Message $m_id SZ_BAD  f:$f_msg:$f_size t:$t_msg:$t_size\n";
+			print_info "Message $m_id SZ_BAD  f:$f_msg:$f_size t:$t_msg:$t_size\n";
 
 			# delete in to and recopy ?
 			# NO recopy CODE HERE. to be written if needed.
 			$error++;
 			if ($opt_G) {
-				print "Deleting msg f:#$t_msg in folder $t_fold\n";
+				print_info "Deleting msg f:#$t_msg in folder $t_fold\n";
 				$to->delete_message($t_msg) unless ($dry);
 				last FOLDER if $to->IsUnconnected();
 			}
@@ -1735,10 +1747,10 @@ FOLDER: foreach my $f_fold (@f_folders) {
 
 			# Good
 			$debug
-			  and print
+			  and print_info
 			  "Message $m_id SZ_GOOD f:$f_msg:$f_size t:$t_msg:$t_size\n";
 			if ($delete) {
-				print "Deleting msg #$f_msg in folder $f_fold\n";
+				print_info "Deleting msg #$f_msg in folder $f_fold\n";
 				unless ($dry) {
 					$from->delete_message($f_msg);
 					last FOLDER      if $from->IsUnconnected();
@@ -1749,18 +1761,18 @@ FOLDER: foreach my $f_fold (@f_folders) {
 		}
 	}
 	if ($expunge1) {
-		print "Expunging source folder $f_fold\n";
+		print_info "Expunging source folder $f_fold\n";
 		unless ($dry) { $from->expunge() }
 	}
 	if ($expunge2) {
-		print "Expunging target folder $t_fold\n";
+		print_info "Expunging target folder $t_fold\n";
 		unless ($dry) { $to->expunge() }
 	}
 
-	print "Time: ", timenext(), " s\n";
+	print_info "Time: ", timenext(), " s\n";
 }
 
-print "++++ End looping on each folder ++++\n";
+print_info "++++ End looping on each folder ++++\n";
 
 # FOLDER loop is exited any time a connection is lost be sure to log it!
 # Example:
@@ -1791,8 +1803,8 @@ sub lost_connection {
 		# if string is long try reduce to a more reasonable size
 		$lcomm = _filter($lcomm);
 		$einfo = _filter($einfo);
-		warn("error: last command: $lcomm\n") if ( $debug && $lcomm );
-		warn( "error: lost connection $error_message", $einfo, "\n" );
+		print_info("error: last command: $lcomm\n") if ( $debug && $lcomm );
+		print_info( "error: lost connection $error_message", $einfo, "\n" );
 		return (1);
 	}
 	else {
@@ -1844,17 +1856,17 @@ sub select_msgs {
 }
 
 sub stats {
-	print "++++ Statistics ++++\n";
-	print "Time                   : $timediff sec\n";
-	print "Messages transferred   : $mess_trans ";
-	print "(could be $mess_skipped_dry without dry mode)" if ($dry);
-	print "\n";
-	print "Messages skipped       : $mess_skipped\n";
-	print "Total bytes transferred: $mess_size_total_trans\n";
-	print "Total bytes skipped    : $mess_size_total_skipped\n";
-	print "Total bytes error      : $mess_size_total_error\n";
-	print "Detected $error errors\n\n";
-	print thank_author();
+	print_info "++++ Statistics ++++\n";
+	print_info "Time                   : $timediff sec\n";
+	print_info "Messages transferred   : $mess_trans ";
+	print_info "(could be $mess_skipped_dry without dry mode)" if ($dry);
+	print_info "\n";
+	print_info "Messages skipped       : $mess_skipped\n";
+	print_info "Total bytes transferred: $mess_size_total_trans\n";
+	print_info "Total bytes skipped    : $mess_size_total_skipped\n";
+	print_info "Total bytes error      : $mess_size_total_error\n";
+	print_info "Detected $error errors\n\n";
+	print_info thank_author();
 }
 
 sub thank_author {
@@ -1876,7 +1888,7 @@ sub get_options {
 	$test_builder->no_ending(1);
 
 	if ( $argv =~ m/-delete¤2/ ) {
-		print "May be you mean --delete2 instead of --delete 2\n";
+		print_info "May be you mean --delete2 instead of --delete 2\n";
 		exit 1;
 	}
 	my $opt_ret = GetOptions(
@@ -1950,10 +1962,10 @@ sub get_options {
 		"justlogin!"         => \$justlogin,
 	);
 
-	$debug and print "get options: [$opt_ret]\n";
+	$debug and print_info "get options: [$opt_ret]\n";
 
 	# just the version
-	print "$VERSION\n" and exit if ($version);
+	print_info "$VERSION\n" and exit if ($version);
 
 	if ($tests) {
 		$test_builder->no_ending(0);
@@ -1989,9 +2001,9 @@ sub parse_header_msg1 {
 
 	my $head    = $s_heads->{$m_uid};
 	my $headnum = scalar( keys(%$head) );
-	$debug and print "Head NUM:", $headnum, "\n";
+	$debug and print_info "Head NUM:", $headnum, "\n";
 	unless ($headnum) {
-		print "Warning: no header used or found for message $m_uid\n";
+		print_info "Warning: no header used or found for message $m_uid\n";
 	}
 	my $headstr;
 
@@ -2010,10 +2022,10 @@ sub parse_header_msg1 {
 			my $H = "$h: $val";
 
 			# show stuff in debug mode
-			$debug and print "${s}H $H:", $val, "\n";
+			$debug and print_info "${s}H $H:", $val, "\n";
 
 			if ( $skipheader and $H =~ m/$skipheader/i ) {
-				$debug and print "Skipping header $H\n";
+				$debug and print_info "Skipping header $H\n";
 				next;
 			}
 
@@ -2027,10 +2039,10 @@ sub parse_header_msg1 {
 
 		# taking everything is too heavy,
 		# should take only 1 Ko
-		#print "no header so taking everything\n";
+		#print_info "no header so taking everything\n";
 		#$headstr = $imap->message_string($m_uid);
 
-		print "no header so we ignore this message\n";
+		print_info "no header so we ignore this message\n";
 		return undef;
 	}
 	my $size  = $s_fir->{$m_uid}->{"RFC822.SIZE"};
@@ -2038,7 +2050,7 @@ sub parse_header_msg1 {
 	my $idate = $s_fir->{$m_uid}->{"INTERNALDATE"};
 	$size = length($headstr) unless ($size);
 	my $m_md5 = md5_base64($headstr);
-	$debug and print "$s msg $m_uid:$m_md5:$size\n";
+	$debug and print_info "$s msg $m_uid:$m_md5:$size\n";
 	my $key;
 
 	if ($skipsize) {
@@ -2084,14 +2096,14 @@ sub string_to_file {
 	my ( $string, $file ) = @_;
 	sysopen( FILE, $file, O_WRONLY | O_TRUNC | O_CREAT, 0600 )
 	  or die("$! $file");
-	print FILE $string;
+	print_info FILE $string;
 	close FILE;
 }
 
 sub usage {
 	my $localhost_info = localhost_info();
 	my $thank          = thank_author();
-	print <<EOF;
+	print_info <<EOF;
 
 usage: $0 [options]
 
@@ -2193,7 +2205,7 @@ Several options are mandatory.
 --allowsizemismatch    : allow RFC822.SIZE != fetched msg size
                          consider --skipsize to avoid duplicate messages
                          when running syncs more than one time per mailbox
---dry                  : do nothing, just print what would be done.
+--dry                  : do nothing, just print_info what would be done.
 --subscribed           : transfers subscribed folders.
 --subscribe            : subscribe to the folders transferred on the 
                          "destination" server that are subscribed
@@ -2205,8 +2217,8 @@ Several options are mandatory.
 --nosyncacls           : Does not synchronise acls. This is the default.
 --debug                : debug mode.
 --debugimap            : imap debug mode.
---version              : print software version.
---justconnect          : just connect to both servers and print useful
+--version              : print_info software version.
+--justconnect          : just connect to both servers and print_info useful
                          information. Need only --host1 and --host2 options.
 --justlogin            : just login to both servers with users credentials 
                          and exit.
@@ -2221,7 +2233,7 @@ Several options are mandatory.
 --fastio1              : use fastio with the "from" server.
 --fastio2              : use fastio with the "destination" server.
 --timeout     <int>    : imap connect timeout.
---help                 : print this.
+--help                 : print_info this.
 
 Example: to synchronise imap account "foo" on "imap.truc.org"
                     to  imap account "bar" on "imap.trac.org"
