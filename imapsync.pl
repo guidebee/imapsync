@@ -1620,8 +1620,7 @@ sub syncMails {
 	$allow3xx = defined($allow3xx) ? $allow3xx : 1;
 
 	check_lib_version()
-	  or die
-"imapsync needs perl lib Mail::IMAPClient release 2.2.9, or 3.0.19 or superior \n";
+	  or die "imapsync needs perl lib Mail::IMAPClient release 2.2.9, or 3.0.19 or superior \n";
 
 	print_info $banner;
 
@@ -1659,14 +1658,12 @@ sub syncMails {
 	  defined($syncinternaldates) ? defined($syncinternaldates) : 1;
 
 	if ($idatefromheader) {
-		print_info "Turned ON idatefromheader, ",
-"will set the internal dates on host2 from the 'Date:' header line.\n";
+		print_info "Turned ON idatefromheader, ","will set the internal dates on host2 from the 'Date:' header line.\n";
 		$syncinternaldates = 0;
 
 	}
 	if ($syncinternaldates) {
-		print_info "Turned ON syncinternaldates, ",
-"will set the internal dates (arrival dates) on host2 same as host1.\n";
+		print_info "Turned ON syncinternaldates, ","will set the internal dates (arrival dates) on host2 same as host1.\n";
 	}
 	else {
 		print_info "Turned OFF syncinternaldates\n";
@@ -1751,11 +1748,8 @@ sub syncMails {
 	$debug and print_info "From Buffer I/O: ", $from->Buffer(), "\n";
 	$debug and print_info "To   Buffer I/O: ", $to->Buffer(),   "\n";
 
-	$debug
-	  and print_info "From capability: ", join( " ", $from->capability() ),
-	  "\n";
-	$debug
-	  and print_info "To   capability: ", join( " ", $to->capability() ), "\n";
+	$debug and print_info "From capability: ", join( " ", $from->capability() ),"\n";
+	$debug and print_info "To   capability: ", join( " ", $to->capability() ), "\n";
 
 	die unless $from->IsAuthenticated();
 	print_info "host1: state Authenticated\n";
@@ -1804,8 +1798,7 @@ sub syncMails {
 		foreach my $include (@include) {
 			my @included_folders = grep /$include/, @all_source_folders;
 			add_to_requested_folders(@included_folders);
-			print_info
-"Including folders matching pattern '$include': @included_folders\n";
+			print_info "Including folders matching pattern '$include': @included_folders\n";
 		}
 	}
 
@@ -1814,8 +1807,7 @@ sub syncMails {
 			my @requested_folder = sort( keys(%requested_folder) );
 			my @excluded_folders = grep /$exclude/, @requested_folder;
 			remove_from_requested_folders(@excluded_folders);
-			print_info
-"Excluding folders matching pattern '$exclude': @excluded_folders\n";
+			print_info "Excluding folders matching pattern '$exclude': @excluded_folders\n";
 		}
 	}
 
@@ -1823,8 +1815,7 @@ sub syncMails {
 
 	foreach my $folder ( keys(%requested_folder) ) {
 		if ( not $from->selectable($folder) ) {
-			print_info
-			  "Warning: ignoring folder $folder because it is not selectable\n";
+			print_info "Warning: ignoring folder $folder because it is not selectable\n";
 			remove_from_requested_folders($folder);
 		}
 	}
@@ -1838,10 +1829,10 @@ sub syncMails {
 	$f_sep = get_separator( $from, $sep1, "--sep1" );
 	$t_sep = get_separator( $to,   $sep2, "--sep2" );
 
- #my $f_namespace = $from->namespace();
- #my $t_namespace = $to->namespace();
- #$debug and print_info "From namespace:\n", Data::Dumper->Dump([$f_namespace]);
- #$debug and print_info "To   namespace:\n", Data::Dumper->Dump([$t_namespace]);
+ 	#my $f_namespace = $from->namespace();
+ 	#my $t_namespace = $to->namespace();
+ 	#$debug and print_info "From namespace:\n", Data::Dumper->Dump([$f_namespace]);
+ 	#$debug and print_info "To   namespace:\n", Data::Dumper->Dump([$t_namespace]);
 
 	$f_prefix = get_prefix( $from, $prefix1, "--prefix1" );
 	$t_prefix = get_prefix( $to,   $prefix2, "--prefix2" );
@@ -1872,13 +1863,10 @@ sub syncMails {
 		$t_folders_list{$folder}++;
 	}
 
-	print_info "++++ Listing folders ++++\n", "From folders list: ",
-	  map( "[$_] ", @f_folders ), "\n", "To   folders list: ",
-	  map( "[$_] ", @t_folders_list ), "\n";
+	print_info "++++ Listing folders ++++\n", "From folders list: ", map( "[$_] ", @f_folders ), "\n",
+	 "To   folders list: ",	 map( "[$_] ", @t_folders_list ), "\n";
 
-	print_info "From subscribed folders list: ",
-	  map( "[$_] ", sort keys(%subscribed_folder) ), "\n"
-	  if ($subscribed);
+	print_info "From subscribed folders list: ", map( "[$_] ", sort keys(%subscribed_folder) ), "\n"  if ($subscribed);
 
 	print_info "++++ Looping on each folder ++++\n";
 
@@ -1892,18 +1880,16 @@ sub syncMails {
 		last FOLDER if $to->IsUnconnected();
 
 		unless ( $from->select($f_fold) ) {
-			print_info "From Folder $f_fold: Could not select: ",
-			  $from->LastError, "\n";
+			print_info "From Folder $f_fold: Could not select: ", $from->LastError, "\n";
 			$error++;
 			next FOLDER;
 		}
 		if ( !exists( $t_folders_list{$t_fold} ) ) {
-			print_info "To   Folder $t_fold does not exist\n";
-			print_info "Creating folder [$t_fold]\n";
+			print_info "To   Folder $t_fold does not exist\n"; print_info "Creating folder [$t_fold]\n";
 			unless ($dry) {
 				unless ( $to->create($t_fold) ) {
 
-#pondracek: AAPT Migration Special: Ignoring '.INBOX.INBOX.{something}' mailboxes as errors
+		#pondracek: AAPT Migration Special: Ignoring '.INBOX.INBOX.{something}' mailboxes as errors
 					unless ( $to->LastError =~ m/Mailbox already exists/ ) {
 						print_info "Couldn't create [$t_fold]: ",
 						  $to->LastError, "\n";
@@ -1946,16 +1932,13 @@ sub syncMails {
 		my @f_msgs = select_msgs($from);
 
 		$debug
-		  and print_info "LIST FROM: ", scalar(@f_msgs),
-		  " messages [@f_msgs]\n";
+		  and print_info "LIST FROM: ", scalar(@f_msgs), " messages [@f_msgs]\n";
 
 		# internal dates on "TO" are after the ones on "FROM"
 		# normally...
 		my @t_msgs = select_msgs($to);
 
-		$debug
-		  and print_info "LIST TO  : ", scalar(@t_msgs),
-		  " messages [@t_msgs]\n";
+		$debug  and print_info "LIST TO  : ", scalar(@t_msgs), " messages [@t_msgs]\n";
 
 		my %f_hash = ();
 		my %t_hash = ();
@@ -1986,8 +1969,7 @@ sub syncMails {
 			if ( !$rc ) {
 				my $reason = !defined($rc) ? "no header" : "duplicate";
 				my $f_size = $f_fir->{$m}->{"RFC822.SIZE"} || 0;
-				print_info
-"+ Skipping msg #$m:$f_size in folder $f_fold ($reason so we ignore this message)\n";
+				print_info "+ Skipping msg #$m:$f_size in folder $f_fold ($reason so we ignore this message)\n";
 				$mess_size_total_skipped += $f_size;
 				$mess_skipped            += 1;
 			}
@@ -2011,8 +1993,7 @@ sub syncMails {
 			if ( !$rc ) {
 				my $reason = !defined($rc) ? "no header" : "duplicate";
 				my $t_size = $t_fir->{$m}->{"RFC822.SIZE"} || 0;
-				print_info
-"+ Skipping msg #$m:$t_size in 'to' folder $t_fold ($reason so we ignore this message)\n";
+				print_info "+ Skipping msg #$m:$t_size in 'to' folder $t_fold ($reason so we ignore this message)\n";
 
 				#$mess_size_total_skipped += $msize;
 				#$mess_skipped += 1;
@@ -2041,8 +2022,7 @@ sub syncMails {
 					my $t_msg = $t_hash{$m_id}{'m'};
 					my $flags = $t_hash{$m_id}{'F'} || "";
 					my $isdel = $flags =~ /\B\\Deleted\b/ ? 1 : 0;
-					print_info "deleting message $m_id  $t_msg\n"
-					  if !$isdel;
+					print_info "deleting message $m_id  $t_msg\n"  if !$isdel;
 					push( @expunge, $t_msg ) if $uidexpunge2;
 					unless ( $dry or $isdel ) {
 						$to->delete_message($t_msg);
@@ -2067,8 +2047,7 @@ sub syncMails {
 			my $f_idate = $f_hash{$m_id}{'D'};
 
 			if ( defined $maxsize and $f_size > $maxsize ) {
-				print_info
-"+ Skipping msg #$f_msg:$f_size in folder $f_fold (exceeds maxsize limit $maxsize bytes)\n";
+				print_info "+ Skipping msg #$f_msg:$f_size in folder $f_fold (exceeds maxsize limit $maxsize bytes)\n";
 				$mess_size_total_skipped += $f_size;
 				$mess_skipped            += 1;
 				next MESS;
@@ -2084,8 +2063,7 @@ sub syncMails {
 				my $string;
 				$string = $from->message_string($f_msg);
 				unless ( defined($string) ) {
-					print_info "Could not fetch message #$f_msg from $f_fold: ",
-					  $from->LastError, "\n";
+					print_info "Could not fetch message #$f_msg from $f_fold: ",  $from->LastError, "\n";
 					$error++;
 					$mess_size_total_error += $f_size;
 					next MESS;
@@ -2170,13 +2148,11 @@ sub syncMails {
 						# good
 						# $new_id is an id if the IMAP server has the
 						# UIDPLUS capability else just a ref
-						print_info
-"Copied msg id [$f_msg] to folder $t_fold msg id [$new_id]\n";
+						print_info "Copied msg id [$f_msg] to folder $t_fold msg id [$new_id]\n";
 						$mess_size_total_trans += $f_size;
 						$mess_trans            += 1;
 						if ($delete) {
-							print_info
-							  "Deleting msg #$f_msg in folder $f_fold\n";
+							print_info  "Deleting msg #$f_msg in folder $f_fold\n";
 							unless ($dry) {
 								$from->delete_message($f_msg);
 								last FOLDER      if $from->IsUnconnected();
@@ -2219,8 +2195,7 @@ sub syncMails {
 			my @flags_a = map { exists $ft{$_} ? () : $_ } @ff;
 
 			$debug
-			  and print_info
-"Setting flags(@flags_a) ffrom($flags_f) fto($flags_t) on msg #$t_msg in $t_fold\n";
+			  and print_info "Setting flags(@flags_a) ffrom($flags_f) fto($flags_t) on msg #$t_msg in $t_fold\n";
 
 			# This adds or changes flags but no flag are removed with this
 			if (    !$dry
@@ -2256,8 +2231,7 @@ sub syncMails {
 			unless ( ( $f_size == $t_size ) or $skipsize ) {
 
 				# Bad size
-				print_info
-				  "Message $m_id SZ_BAD  f:$f_msg:$f_size t:$t_msg:$t_size\n";
+				print_info  "Message $m_id SZ_BAD  f:$f_msg:$f_size t:$t_msg:$t_size\n";
 
 				# delete in to and recopy ?
 				# NO recopy CODE HERE. to be written if needed.
@@ -2272,8 +2246,7 @@ sub syncMails {
 
 				# Good
 				$debug
-				  and print_info
-				  "Message $m_id SZ_GOOD f:$f_msg:$f_size t:$t_msg:$t_size\n";
+				  and print_info  "Message $m_id SZ_GOOD f:$f_msg:$f_size t:$t_msg:$t_size\n";
 				if ($delete) {
 					print_info "Deleting msg #$f_msg in folder $f_fold\n";
 					unless ($dry) {
